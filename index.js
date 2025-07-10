@@ -15,6 +15,8 @@ app.listen(port, () => {
 // Load environment variables
 require("dotenv").config();
 
+let client; // <--- THIS IS THE CRITICAL FIX: Declare client globally here
+
 // Discord.js imports
 const {
     Client,
@@ -124,6 +126,26 @@ const joinButtonTemplate = new ButtonBuilder()
     .setCustomId("raffle_join")
     .setLabel("🎟️ Use Ticket")
     .setStyle(ButtonStyle.Primary);
+
+// --- Discord Client Setup ---
+// Assign the new Client instance to the globally declared 'client' variable
+client = new Client({
+    // Specify the intents your bot needs. Guilds is essential for server-related events.
+    intents: [
+        GatewayIntentBits.Guilds, // Required for guild-related events and fetching guild data
+        GatewayIntentBits.GuildMessages, // Required for message events in guilds
+        GatewayIntentBits.MessageContent, // Required to read message content (if needed for non-slash commands, but good practice)
+        GatewayIntentBits.GuildMembers, // Required for fetching member data (e.g., for permissions)
+    ],
+    // Specify partials to ensure full data is available even if not cached
+    partials: [
+        Partials.Channel,
+        Partials.GuildMember, // Essential for fetching full member data
+        Partials.Message,
+        Partials.Reaction,
+        Partials.User,
+    ],
+});
 
 client.once("ready", async () => {
     console.log(`🎉 Logged in as ${client.user.tag}`);
